@@ -1,0 +1,16 @@
+## Links to library and sequencing protocols
+Brian Uapinyoying
+Updated 11/05/2019
+
+The library kit and barcode kit: 
+- https://www.pacb.com/products-and-services/consumables/pacbio-rs-ii-consumables/sample-and-template-preparation-kits/
+
+For sequencing:
+- https://www.pacb.com/products-and-services/consumables/pacbio-rs-ii-consumables/smrt-cells-sequencing-reagent-kits-and-accessories/
+- DNA/Polymerase Binding Kit P6 V2 (#100-372-700) 
+- DNA P6 Control Complex (#100-356-500)
+- DNA Sequencing Reagent 4.0 (#100-356-200)
+- SmrtCells (#100-171-800)
+
+SmrtAnalysis 2.3: 
+- https://www.pacb.com/support/software-downloads/

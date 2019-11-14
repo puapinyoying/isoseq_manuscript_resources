@@ -1,0 +1,12 @@
+# run: conda env create --file environment.yml
+name: exphaser-env
+dependencies:
+- python=3.6
+- anaconda
+- pandas
+- tqdm
+- matplotlib
+- pip
+- pip:
+  - argparse
+  - htseq

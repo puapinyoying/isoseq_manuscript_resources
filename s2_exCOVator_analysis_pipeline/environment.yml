@@ -1,0 +1,15 @@
+# run: conda env create --file environment.yml
+name: excovator-env
+dependencies:
+- python=2.7
+- anaconda
+- pandas
+- tqdm
+- matplotlib
+- biopython
+- pip
+- pip:
+  - argparse
+  - htseq
+  - pyensembl
+  - mygene
