@@ -107,9 +107,13 @@ python s5_exCOVator.py --bam ./bams/cardiac.bam ./bams/edl.bam ./bams/soleus.bam
 
 #### Step 6: Filter for differentially used exons
 Script will output a csv with the filtered list of exons and a simple list of their gene symbols for step 7
-- Filtered by 10% difference: took 686 genes --> 443 genes differentially used, 2630 exons
+- Filtered exons by 30x consensus reads ('ctotal') in at least 1 sample. Can also use full-length reads ('ftotal')
+- Filtered by 20% difference between samples
 ```bash
-python s6_filterDiffUsedExons.py -i ./output/686_genes_exon_ratios.csv -o ./output/filtered_10p_diff_used --ratio_diff 0.10
+python s6_filterDiffUsedExons.py -i ./output/686_genes_exon_ratios.csv -o ./output/diff_used \
+--cov_readtype='ctotal' \
+--min_cov=30 \
+--ratio_diff 0.20
 ```
 
 #### Step 7: Gene summaries
@@ -118,7 +122,7 @@ Grabs full gene names and their summaries from NCBI to simplify analysis
 - need to specify animal for grabbing the summaries from. Human will have the most gene summaries compared to mouse, but will not have mouse specific genes. Can run again with diff animal 
 - NCBI requires an email to contact you if you overload their servers with too many requests over a short period of time. Should not be an issue here.
 ```bash
-python s7_getGeneSummaries.py -g ./output/filtered_10p_diff_used_gene_list.csv -a human -o ./output/443_diff_used -e your.email@institution.edu
+python s7_getGeneSummaries.py -g ./output/diff_used_gene_list.csv -a human -o ./output/diff_used -e your.email@institution.edu
 ```
 
 

@@ -1,0 +1,4 @@
+fastqc -o /isoseq_project/shortread/results/s1_fastqc -f fastq /isoseq_project/shortread/data/EDL_CTR_SRR7415846_1.fastq
+fastqc -o /isoseq_project/shortread/results/s1_fastqc -f fastq /isoseq_project/shortread/data/EDL_CTR_SRR7415846_2.fastq
+fastqc -o /isoseq_project/shortread/results/s1_fastqc -f fastq /isoseq_project/shortread/data/SOLEUS_CTR_SRR7415850_1.fastq
+fastqc -o /isoseq_project/shortread/results/s1_fastqc -f fastq /isoseq_project/shortread/data/SOLEUS_CTR_SRR7415850_2.fastq

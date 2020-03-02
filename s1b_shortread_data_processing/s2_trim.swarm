@@ -1,0 +1,17 @@
+java -Xmx5g -jar $TRIMMOJAR PE -threads 8 -phred33 -trimlog \
+/isoseq_project/shortread/results/s2_trimmed/trim_logs/EDL \
+/isoseq_project/shortread/data/EDL_CTR_SRR7415846_1.fastq \
+/isoseq_project/shortread/data/EDL_CTR_SRR7415846_2.fastq \
+/isoseq_project/shortread/results/s2_trimmed/EDL_CTR_SRR7415846_1_paired.fastq \
+/isoseq_project/shortread/results/s2_trimmed/EDL_CTR_SRR7415846_1_unpaired.fastq \
+/isoseq_project/shortread/results/s2_trimmed/EDL_CTR_SRR7415846_2_paired.fastq \
+/isoseq_project/shortread/results/s2_trimmed/EDL_CTR_SRR7415846_2_unpaired.fastq ILLUMINACLIP:/usr/local/apps/trimmomatic/Trimmomatic-0.36/adapters/TruSeq3-PE.fa:2:30:10 HEADCROP:15 TRAILING:20 SLIDINGWINDOW:4:20 MINLEN:15
+
+java -Xmx5g -jar $TRIMMOJAR PE -threads 8 -phred33 -trimlog \
+/isoseq_project/shortread/results/s2_trimmed/trim_logs/SOLEUS \
+/isoseq_project/shortread/data/SOLEUS_CTR_SRR7415850_1.fastq \
+/isoseq_project/shortread/data/SOLEUS_CTR_SRR7415850_2.fastq \
+/isoseq_project/shortread/results/s2_trimmed/SOLEUS_CTR_SRR7415850_1_paired.fastq \
+/isoseq_project/shortread/results/s2_trimmed/SOLEUS_CTR_SRR7415850_1_unpaired.fastq \
+/isoseq_project/shortread/results/s2_trimmed/SOLEUS_CTR_SRR7415850_2_paired.fastq \
+/isoseq_project/shortread/results/s2_trimmed/SOLEUS_CTR_SRR7415850_2_unpaired.fastq ILLUMINACLIP:/usr/local/apps/trimmomatic/Trimmomatic-0.36/adapters/TruSeq3-PE.fa:2:30:10 HEADCROP:15 TRAILING:20 SLIDINGWINDOW:4:20 MINLEN:15

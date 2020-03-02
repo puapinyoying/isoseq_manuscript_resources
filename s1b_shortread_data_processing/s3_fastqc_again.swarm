@@ -1,0 +1,4 @@
+fastqc -o /isoseq_project/shortread/results/s3_fastqc_again -f fastq /isoseq_project/shortread/results/s2_trimmed/EDL_CTR_SRR7415846_1_paired.fastq
+fastqc -o /isoseq_project/shortread/results/s3_fastqc_again -f fastq /isoseq_project/shortread/results/s2_trimmed/EDL_CTR_SRR7415846_2_paired.fastq
+fastqc -o /isoseq_project/shortread/results/s3_fastqc_again -f fastq /isoseq_project/shortread/results/s2_trimmed/SOLEUS_CTR_SRR7415850_1_paired.fastq
+fastqc -o /isoseq_project/shortread/results/s3_fastqc_again -f fastq /isoseq_project/shortread/results/s2_trimmed/SOLEUS_CTR_SRR7415850_2_paired.fastq

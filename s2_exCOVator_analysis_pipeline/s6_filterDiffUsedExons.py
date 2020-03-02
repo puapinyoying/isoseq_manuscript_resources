@@ -27,79 +27,85 @@ def get_genes_and_samples(df):
     
     return gene_list, sample_list
 
-def filter_exons(df, gene_list, sample_list, ratio_diff):
-    # Store the filtered gene dataframe to create a new large data frame with results
-    filtered_df_list = []
+def filter_exons(df, gene_list, sample_list, min_cov, cov_readtype, ratio_diff):
+    """Filter exons by minimum total coverage and ratio of differential expression between samples"""
+    cov_filter_df_list = [] # Store the filtered gene dataframe to create a new large data frame with results
+    full_filter_df_list = []
     
     for gene in tqdm(gene_list):
         df1 = df.loc[gene] # grab a slice of the data frame with a single gene
-        
-        # If there are three samples in csv file
-        if len(sample_list) == 3:
-            # simplify the sample names into sort variables
-            s1 = sample_list[0]
+    
+        if len(sample_list) == 3: # If there are three samples in csv file
+            s1 = sample_list[0] # simplify the sample names into sort variables
             s2 = sample_list[1]
             s3 = sample_list[2]
             
-            # Remove any exons that are fully matched in all 3 samples
-            f1 = df1[(df1[s1]['fratio'] < 1) | \
-                     (df1[s2]['fratio'] < 1) | \
-                     (df1[s3]['fratio'] < 1)]
+            # Filter exons by  coverage first
+            f1 = df1[(df1[s1][cov_readtype] >= min_cov) | \
+                    (df1[s2][cov_readtype] >= min_cov) | \
+                    (df1[s3][cov_readtype] >= min_cov)]
             
-            # Calculate the mean of the exon total coverage of each full-length read column
-            # These averages exclude the fully covered exons filtered out above (f1)
-            m1 = f1[s1]['ftotal'].mean()
-            m2 = f1[s2]['ftotal'].mean()
-            m3 = f1[s3]['ftotal'].mean()
+            # Rm exons that are 100% PSI in all 3 samples
+            f2 = f1[(f1[s1]['fratio'] < 1) | (f1[s2]['fratio'] < 1) | (f1[s3]['fratio'] < 1)]
             
-            # Second filter step is to compare ratios for each exon and see if they differ
-            # from each other by a specific threshold (ratio_diff between 0 and 1) 
-            # If one of the samples have consistantly low average coverage across all exons 
+            m1 = f2[s1]['ftotal'].mean() # Calc the mean of total fl read coverage for each exon
+            m2 = f2[s2]['ftotal'].mean()
+            m3 = f2[s3]['ftotal'].mean()
+            
+            # Compare ratios (0-1) for each exon in gene and compare ratio by a given threshold
             if m1 <= 0 and m2 > 0 and m3 > 0:
                 # Get the absolute value of the difference & compare to ratio_diff
-                f2 = f1[(abs(f1[s2]['fratio'] - f1[s3]['fratio']) >= ratio_diff)]
+                f3 = f2[(abs(f2[s2]['fratio'] - f2[s3]['fratio']) >= ratio_diff)]
 
             elif m2 <= 0 and m1 > 0 and m3 > 0:
-                f2 = f1[(abs(f1[s1]['fratio'] - f1[s3]['fratio']) >= ratio_diff)]
+                f3 = f2[(abs(f2[s1]['fratio'] - f2[s3]['fratio']) >= ratio_diff)]
 
             elif m3 <= 0 and m1 > 0 and m2 > 0:
-                f2 = f1[(abs(f1[s1]['fratio'] - f1[s2]['fratio']) >= ratio_diff)]
+                f3 = f2[(abs(f2[s1]['fratio'] - f2[s2]['fratio']) >= ratio_diff)]
 
             else: 
-                f2 = f1[ (abs(f1[s1]['fratio'] - f1[s2]['fratio']) >= ratio_diff) | \
-                         (abs(f1[s1]['fratio'] - f1[s3]['fratio']) >= ratio_diff) | \
-                         (abs(f1[s2]['fratio'] - f1[s3]['fratio']) >= ratio_diff) ]
+                f3 = f2[ (abs(f2[s1]['fratio'] - f2[s2]['fratio']) >= ratio_diff) | \
+                         (abs(f2[s1]['fratio'] - f2[s3]['fratio']) >= ratio_diff) | \
+                         (abs(f2[s2]['fratio'] - f2[s3]['fratio']) >= ratio_diff) ]
         
         # Its much more straight forward with two samples
         elif len(sample_list) == 2:
             s1 = sample_list[0]
             s2 = sample_list[1]
-            f1 = df1[(df1[s1]['fratio'] < 1) | (df1[s2]['fratio'] < 1)]
+            f1 = df1[(df1[s1][cov_readtype] >= min_cov) | \
+                     (df1[s2][cov_readtype] >= min_cov)]
+            f2 = f1[(f1[s1]['fratio'] < 1) | (f1[s2]['fratio'] < 1)]
+            m1 = f2[s1]['ftotal'].mean()
+            m2 = f2[s2]['ftotal'].mean()
+            f3 = f2[(abs(f2[s1]['fratio'] - f2[s2]['fratio']) >= ratio_diff)]
             
-            m1 = f1[s1]['ftotal'].mean()
-            m2 = f1[s2]['ftotal'].mean()
-            f2 = f1[(abs(f1[s1]['fratio'] - f1[s2]['fratio']) >= ratio_diff)]
-                    
         else:
             print "Script does not support > 3 or less than 2 samples"
             sys.exit(1)
             
-        if len(f2) > 0: # If its not empty
-            ## For lenient filter
-            f2_copy = f2.copy() # make a copy of the slice
-            f2_copy['gene_name'] = gene # Put the gene name back on the dataframe
-            f2_copy.set_index('gene_name', append=True,  inplace=True) # Set it as the index
+        if len(f3) > 0: # If its not empty
+            f1_copy = f1.copy()
+            f1_copy['gene_name'] = gene
+            f1_copy.set_index('gene_name', append=True,  inplace=True) # Set it as the index
+            
+            f3_copy = f3.copy() # make a copy of the slice
+            f3_copy['gene_name'] = gene # Put the gene name back on the dataframe
+            f3_copy.set_index('gene_name', append=True,  inplace=True) # Set it as the index
             
             # Reorder it to original position in front
-            filtered_gene_df = f2_copy.reorder_levels(['gene_name', 'exonic_part_num'])
+            cov_filter_gene_df = f1_copy.reorder_levels(['gene_name', 'exonic_part_num'])
+            full_filter_gene_df = f3_copy.reorder_levels(['gene_name', 'exonic_part_num'])
             
-            # Sort the df so that unannotated exons will be listed in order by start coordinate
-            sorted_filtered_df = filtered_gene_df.sort_values([(sample_list[0], 'start')], ascending=True)
-            filtered_df_list.append(sorted_filtered_df)
-          
-    filtered_df = pd.concat(filtered_df_list)
+            # Sort the dfs so that unannotated exons will be listed in order by start coordinate
+            sorted_cov_filter_df = cov_filter_gene_df.sort_values([(sample_list[0], 'start')], ascending=True)
+            sorted_full_filter_df = full_filter_gene_df.sort_values([(sample_list[0], 'start')], ascending=True)
+            cov_filter_df_list.append(sorted_cov_filter_df)
+            full_filter_df_list.append(sorted_full_filter_df)
     
-    return filtered_df
+    cov_filter_df = pd.concat(cov_filter_df_list)
+    full_filter_df = pd.concat(full_filter_df_list)
+    
+    return cov_filter_df, full_filter_df
 
 def output_gene_list_from_df(df, output_prefix):  
     output_name = output_prefix + '_gene_list.csv'
@@ -122,19 +128,31 @@ def parse_input():
         
         formatter_class=argparse.RawDescriptionHelpFormatter,
         
-        description="""Script to filter for exons differentially used. Option to
-        provide minimum difference between samples as a ratio (e.g. ratio_diff=0.10
+        description="""Script to filter for exons by minimum coverage and ones 
+        that are differentially used. Options to filter by consensus reads (default)
+        or full-length reads), filter by minimum number of reads, and minimum 
+        difference between samples as a ratio (e.g. ratio_diff=0.10
 
         example:""")
     
-    parser.add_argument('--ratio_diff', help="", default=0.10, type=float)
+    parser.add_argument('--min_cov', 
+        help="Minimum threshold for each exon's coverage across all samples",
+        default=30, type=int)
+
+    parser.add_argument('--cov_readtype',
+        help="ctotal = consensus reads, ftotal = full-length reads",
+        default='ctotal', type=str)
+
+    parser.add_argument('--ratio_diff', 
+        help="Minimum threshold (ratio) for difference in exon usage between 2 or more samples",
+        default=0.20, type=float)
 
     parser.add_argument("-v", "--version", action="version",
                         version=textwrap.dedent("""\
         %(prog)s
         -----------------------   
-        Version:    0.1 
-        Updated:    11/13/2019
+        Version:    0.2 
+        Updated:    2/27/2020
         By:         Prech Uapinyoying   
         Website:    https://github.com/puapinyoying"""))
 
@@ -156,6 +174,14 @@ if __name__ == '__main__':
     check_file_exist(args.input)
     df = import_df_from_csv(args.input)
     gene_list, sample_list = get_genes_and_samples(df)
-    filtered_df = filter_exons(df, gene_list, sample_list, args.ratio_diff)
-    output_gene_list_from_df(filtered_df, args.output_prefix)
-    df_to_csv(filtered_df, args.output_prefix)
+    cov_filter_df, full_filter_df = filter_exons(df, gene_list, sample_list, 
+        args.min_cov, args.cov_readtype, args.ratio_diff)
+
+    output_gene_list_from_df(cov_filter_df, '{0}_{1}x_{2}_filtered'.format(
+        args.output_prefix, args.min_cov, args.cov_readtype))
+    output_gene_list_from_df(full_filter_df, '{0}_{1}x_{2}_{3}_ratio_diff_filtered'.format(
+        args.output_prefix, args.min_cov, args.cov_readtype, args.ratio_diff))
+    df_to_csv(cov_filter_df, '{0}_{1}x_{2}_filtered_data'.format(
+        args.output_prefix, args.min_cov, args.cov_readtype))
+    df_to_csv(full_filter_df, '{0}_{1}x_{2}_{3}_ratio_diff_filtered_data'.format(
+        args.output_prefix, args.min_cov, args.cov_readtype, args.ratio_diff))
